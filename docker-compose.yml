@@ -1,0 +1,84 @@
+services:
+  api:
+    build:
+      context: .
+      args:
+        SERVICE_TYPE: api
+    ports:
+      - "8080:8080"
+    environment:
+      APP_ENV: development
+      APP_NAME: go-framework
+      SERVICE_TYPE: api
+      DATABASE_DRIVER: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mydb
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_SSLMODE: disable
+      REDIS_ENABLED: "false"
+    depends_on:
+      - postgres
+
+  cron:
+    build:
+      context: .
+      args:
+        SERVICE_TYPE: cron
+    environment:
+      SERVICE_TYPE: cron
+      DATABASE_DRIVER: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mydb
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_SSLMODE: disable
+    depends_on:
+      - postgres
+    profiles: ["jobs"]
+
+  worker:
+    build:
+      context: .
+      args:
+        SERVICE_TYPE: worker
+    environment:
+      SERVICE_TYPE: worker
+      DATABASE_DRIVER: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mydb
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_SSLMODE: disable
+    depends_on:
+      - postgres
+    profiles: ["jobs"]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    profiles: ["mongo"]
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    profiles: ["redis"]
+
+volumes:
+  pgdata:

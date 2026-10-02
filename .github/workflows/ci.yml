@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.x"
+      - name: Tidy
+        run: go mod tidy
+      - name: Vet
+        run: go vet ./...
+      - name: Test
+        run: go test ./...
+      - name: Build
+        run: |
+          go build -o bin/api ./cmd/api
+          go build -o bin/cron ./cmd/cron
+          go build -o bin/worker ./cmd/worker
+          go build -o bin/lambda ./cmd/lambda
